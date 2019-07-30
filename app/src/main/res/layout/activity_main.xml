@@ -16,13 +16,46 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/takePhoto"
-        android:layout_width="wrap_content"
+    <HorizontalScrollView
+        android:id="@+id/horizontal_scrollview"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="拍照"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/takePhoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="拍照" />
+
+            <Button
+                android:id="@+id/clearData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="清除数据" />
+
+            <Button
+                android:id="@+id/getData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="获取数据" />
+
+            <Button
+                android:id="@+id/getAppTasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="window" />
+        </LinearLayout>
+
+
+    </HorizontalScrollView>
+
 
     <ImageView
         android:id="@+id/imageView"
@@ -30,6 +63,6 @@
         android:layout_height="100dp"
         android:src="@mipmap/ic_launcher"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/takePhoto" />
+        app:layout_constraintTop_toBottomOf="@+id/horizontal_scrollview" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

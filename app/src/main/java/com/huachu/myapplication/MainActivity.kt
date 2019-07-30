@@ -1,6 +1,9 @@
 package com.huachu.myapplication
 
+import android.Manifest
 import android.app.Activity
+import android.app.ActivityManager
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -17,34 +20,125 @@ import com.lzy.okgo.model.Response
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import android.provider.MediaStore
-import com.huachu.mylibrary.FileProvider7
 import android.os.Environment.getExternalStorageDirectory
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.PixelFormat
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
+import android.provider.Settings
+import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
+import android.widget.Button
+import androidx.fragment.app.FragmentActivity
+import com.blankj.utilcode.util.ToastUtils
+import com.huachu.myapplication.R.id.imageView
+import com.huachu.myapplication.R.id.textView
+import com.huachu.myapplication.service.FloatingButtonService
+import com.huachu.myapplication.service.FloatingVideoService
+import com.huachu.mylibrary.FileProvider7
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import com.tbruyelle.rxpermissions2.RxPermissions
 
 
 class MainActivity : AppCompatActivity() {
     val REQUEST_CODE_TAKE_PHOTO = 0
     var mCurrentPhotoPath = ""
+    public lateinit var floatingButton: Button
+    public lateinit var layoutParams: WindowManager.LayoutParams
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         OkGo.getInstance().init(application)
         //getData()
-
-        getDataRetrofit()
-
-
+        val rxPermission = RxPermissions(this)
+        val am = this.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         takePhoto.setOnClickListener(View.OnClickListener {
-            takePhotoNoCompress()
+            rxPermission
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE,
+                            Manifest.permission.CAMERA
+                    )
+                    .subscribe { granted ->
+                        if (granted!!) {
+                            // All requested permissions are granted
+                            takePhotoNoCompress()
+                        } else {
+                            // At least one permission is denied
+
+                        }
+                    }
+
         })
+        clearData.setOnClickListener(View.OnClickListener {
+            am.clearApplicationUserData()
+        })
+        getData.setOnClickListener(View.OnClickListener {
+            getDataRetrofit()
+        })
+        getAppTasks.setOnClickListener(View.OnClickListener {
+            //commonROMPermissionCheck(MainActivity.this)
+            if (commonROMPermissionCheck(this)) {
+                addWindow()
+            } else {
+                requestAlertWindowPermission()
+                ToastUtils.showShort("请授予悬浮窗权限")
+            }
+
+
+        })
+    }
+
+
+    private fun addWindow() {
+        startService(Intent(this@MainActivity, FloatingVideoService::class.java))
+        /* floatingButton = Button(this)
+         floatingButton.text = "button"
+         layoutParams = WindowManager.LayoutParams(
+                 WindowManager.LayoutParams.WRAP_CONTENT,
+                 WindowManager.LayoutParams.WRAP_CONTENT,
+                 0, 0,
+                 PixelFormat.TRANSPARENT
+         )
+         // flag 设置 Window 属性
+         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+         // type 设置 Window 类别（层级）
+         layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY
+         layoutParams.gravity = Gravity.CENTER
+         val windowManager = windowManager
+         floatingButton.setOnTouchListener(FloatingOnTouchListener())
+         windowManager.addView(floatingButton, layoutParams)*/
+    }
+
+
+    private val REQUEST_CODE = 1
+
+    //判断权限
+    private fun commonROMPermissionCheck(context: Activity): Boolean {
+        var result: Boolean? = true
+        if (Build.VERSION.SDK_INT >= 23) {
+            try {
+                val clazz = Settings::class.java
+                val canDrawOverlays = clazz!!.getDeclaredMethod("canDrawOverlays", Context::class.java)
+                result = canDrawOverlays.invoke(null, context) as Boolean?
+            } catch (e: Exception) {
+
+            }
+
+        }
+        return result!!
+    }
+
+    //申请权限
+    private fun requestAlertWindowPermission() {
+        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+        intent.data = Uri.parse("package:$packageName")
+        startActivityForResult(intent, REQUEST_CODE)
     }
 
 
@@ -129,12 +223,42 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_TAKE_PHOTO) {
             imageView.setImageBitmap(BitmapFactory.decodeFile(mCurrentPhotoPath))
+            return
+        }
+        if (requestCode == REQUEST_CODE) {
+            addWindow()
+            return
         }
         // else tip?
 
     }
 
+    /* var mLastX: Float = 0.0F
+     var mLastY: Float = 0.0F
+     override fun onTouchEvent(event: MotionEvent?): Boolean {
+         val mInScreenX = event!!.rawX
+         val mInScreenY = event.rawY
+         when (event.action) {
+             MotionEvent.ACTION_DOWN -> {
+                 mLastX = event.rawX
+                 mLastY = event.rawY
+
+             }
+             MotionEvent.ACTION_MOVE -> {
+                 layoutParams.x = layoutParams.x.plus(mInScreenX - mLastX).toInt()
+                 layoutParams.y = layoutParams.y.plus(mInScreenY - mLastY).toInt()
+                 mLastX = mInScreenX
+                 mLastY = mInScreenY
+                 windowManager.updateViewLayout(floatingButton, layoutParams)
+
+             }
+         }
+         return super.onTouchEvent(event)
+     }*/
+
 }
+
+
 
 
 
