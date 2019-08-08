@@ -33,10 +33,18 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import androidx.annotation.NonNull
 import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
+import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.huachu.myapplication.R.id.imageView
 import com.huachu.myapplication.R.id.textView
+import com.huachu.myapplication.activity.TablayoutActivity
+import com.huachu.myapplication.adapter.DemoViewPagerAdapter
 import com.huachu.myapplication.service.FloatingButtonService
 import com.huachu.myapplication.service.FloatingVideoService
 import com.huachu.mylibrary.FileProvider7
@@ -92,6 +100,43 @@ class MainActivity : AppCompatActivity() {
 
 
         })
+        getMemory.setOnClickListener {
+            ToastUtils.showShort(am.memoryClass.toString())
+        }
+        setViewPager()
+        gettablayout.setOnClickListener {
+            val myIntent = Intent(this, TablayoutActivity::class.java)
+            startActivity(myIntent)
+        }
+
+        map.setOnClickListener {
+            flatmapAndmap()
+        }
+    }
+
+    private fun flatmapAndmap() {
+
+        val SUITS = setOf("♣" /* clubs*/, "♦" /* diamonds*/, "♥" /* hearts*/, "♠" /*spades*/)
+        val VALUES = setOf("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A")
+        val DECK = SUITS.flatMap { suit ->
+            VALUES.map { value -> LogUtils.d("zhaooo", suit.plus(value)) }
+        }
+    }
+
+    private fun setViewPager() {
+
+        viewpager.adapter = DemoViewPagerAdapter()
+        TabLayoutMediator(tabLayout, viewpager, TabLayoutMediator.OnConfigureTabCallback { tab, position ->
+            // Styling each tab here
+            tab.text = "Tab $position"
+        }).attach()
+        viewpager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+            }
+        })
+
+
     }
 
 

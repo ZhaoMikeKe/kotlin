@@ -23,9 +23,11 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.FloatingButtonService"></service>
-        <service android:name=".service.FloatingImageDisplayService"></service>
-        <service android:name=".service.FloatingVideoService"></service>
+        <service android:name=".service.FloatingButtonService" />
+        <service android:name=".service.FloatingImageDisplayService" />
+        <service android:name=".service.FloatingVideoService" />
+
+        <activity android:name=".activity.TablayoutActivity"></activity>
     </application>
 
 </manifest>
