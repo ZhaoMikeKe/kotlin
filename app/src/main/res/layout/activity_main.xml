@@ -61,11 +61,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="tablayout" />
+
             <Button
                 android:id="@+id/map"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="map" />
+
+            <Button
+                android:id="@+id/fenxiang"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="分享" />
+
+            <Button
+                android:id="@+id/fenxiangimg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="分享图片" />
         </LinearLayout>
 
 

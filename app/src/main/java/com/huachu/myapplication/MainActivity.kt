@@ -8,10 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import com.google.gson.Gson
-import com.huachu.myapplication.bean.Result
 import com.huachu.myapplication.bean.ResultBean
-import com.huachu.myapplication.network.ApiSource
-import com.huachu.myapplication.network.Repository
 
 import com.huachu.myapplication.network.Repository.adapterCoroutineQuery
 import com.lzy.okgo.OkGo
@@ -22,30 +19,24 @@ import kotlinx.coroutines.*
 import android.provider.MediaStore
 import android.os.Environment.getExternalStorageDirectory
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
-import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
-import androidx.annotation.NonNull
-import androidx.fragment.app.FragmentActivity
-import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.blankj.utilcode.util.ImageUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
-import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import com.huachu.myapplication.R.id.imageView
-import com.huachu.myapplication.R.id.textView
 import com.huachu.myapplication.activity.TablayoutActivity
 import com.huachu.myapplication.adapter.DemoViewPagerAdapter
-import com.huachu.myapplication.service.FloatingButtonService
 import com.huachu.myapplication.service.FloatingVideoService
 import com.huachu.mylibrary.FileProvider7
 import java.io.File
@@ -53,6 +44,8 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import com.tbruyelle.rxpermissions2.RxPermissions
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
 
 
 class MainActivity : AppCompatActivity() {
@@ -112,15 +105,71 @@ class MainActivity : AppCompatActivity() {
         map.setOnClickListener {
             flatmapAndmap()
         }
+        fenxiang.setOnClickListener {
+            share()
+        }
+        fenxiangimg.setOnClickListener {
+            shareimg()
+        }
+    }
+
+    private fun shareimg() {
+
+        var bgimg0 = ImageUtils.getBitmap(R.mipmap.ic_launcher);
+        var share_intent = Intent();
+        share_intent.setAction(Intent.ACTION_SEND);//设置分享行为
+        share_intent.setType("image/*");  //设置分享内容的类型
+        share_intent.putExtra(Intent.EXTRA_STREAM, saveBitmap(bgimg0, "img"));
+        //创建分享的Dialog
+        share_intent = Intent.createChooser(share_intent, "分享");
+        startActivity(share_intent);
+    }
+
+    /** * 将图片存到本地  */
+    private fun saveBitmap(bm: Bitmap, picName: String): Uri? {
+        try {
+            val dir = Environment.getExternalStorageDirectory().absolutePath + "/renji/" + picName + ".jpg"
+            val f = File(dir)
+            if (!f.exists()) {
+                f.parentFile.mkdirs()
+                f.createNewFile()
+            }
+            val out = FileOutputStream(f)
+            bm.compress(Bitmap.CompressFormat.PNG, 90, out)
+            out.flush()
+            out.close()
+            return Uri.fromFile(f)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return null
+    }
+
+    private fun share() {
+
+        var shareintent = Intent()
+        shareintent.setAction(Intent.ACTION_SEND)//设置分享行为
+        shareintent.setType("text/plain")//设置分享内容的类型
+        shareintent.putExtra(Intent.EXTRA_SUBJECT, "标题")//添加分享内容标题
+        shareintent.putExtra(Intent.EXTRA_TEXT, "www.baidu.com")//添加分享内容
+//创建分享的Dialog
+        shareintent = Intent.createChooser(shareintent, "分享")
+        startActivity(shareintent)
+
     }
 
     private fun flatmapAndmap() {
 
-        val SUITS = setOf("♣" /* clubs*/, "♦" /* diamonds*/, "♥" /* hearts*/, "♠" /*spades*/)
-        val VALUES = setOf("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A")
-        val DECK = SUITS.flatMap { suit ->
-            VALUES.map { value -> LogUtils.d("zhaooo", suit.plus(value)) }
+        val suits = setOf("♣" /* clubs*/, "♦" /* diamonds*/, "♥" /* hearts*/, "♠" /*spades*/)
+        val values = setOf("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A")
+        val deck = suits.flatMap { suit ->
+            values.map { value -> LogUtils.d("zhaooo", suit.plus(value)) }
         }
+        ToastUtils.showShort("请查看log")
+
     }
 
     private fun setViewPager() {
@@ -142,22 +191,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun addWindow() {
         startService(Intent(this@MainActivity, FloatingVideoService::class.java))
-        /* floatingButton = Button(this)
-         floatingButton.text = "button"
-         layoutParams = WindowManager.LayoutParams(
-                 WindowManager.LayoutParams.WRAP_CONTENT,
-                 WindowManager.LayoutParams.WRAP_CONTENT,
-                 0, 0,
-                 PixelFormat.TRANSPARENT
-         )
-         // flag 设置 Window 属性
-         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-         // type 设置 Window 类别（层级）
-         layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY
-         layoutParams.gravity = Gravity.CENTER
-         val windowManager = windowManager
-         floatingButton.setOnTouchListener(FloatingOnTouchListener())
-         windowManager.addView(floatingButton, layoutParams)*/
+/* floatingButton = Button(this)
+floatingButton.text = "button"
+layoutParams = WindowManager.LayoutParams(
+WindowManager.LayoutParams.WRAP_CONTENT,
+WindowManager.LayoutParams.WRAP_CONTENT,
+0, 0,
+PixelFormat.TRANSPARENT
+)
+// flag 设置 Window 属性
+layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+// type 设置 Window 类别（层级）
+layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY
+layoutParams.gravity = Gravity.CENTER
+val windowManager = windowManager
+floatingButton.setOnTouchListener(FloatingOnTouchListener())
+windowManager.addView(floatingButton, layoutParams)*/
     }
 
 
@@ -237,7 +286,7 @@ class MainActivity : AppCompatActivity() {
             val filename = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.CHINA)
                     .format(Date()) + ".png"
             val file = File(getExternalStorageDirectory().path + "/OriPicture", filename)
-            //val file = createOriImageFile()
+//val file = createOriImageFile()
             mCurrentPhotoPath = file.getAbsolutePath()
             val fileUri = FileProvider7.getUriForFile(this, file)
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri)
@@ -274,33 +323,48 @@ class MainActivity : AppCompatActivity() {
             addWindow()
             return
         }
-        // else tip?
+// else tip?
 
     }
 
     /* var mLastX: Float = 0.0F
-     var mLastY: Float = 0.0F
-     override fun onTouchEvent(event: MotionEvent?): Boolean {
-         val mInScreenX = event!!.rawX
-         val mInScreenY = event.rawY
-         when (event.action) {
-             MotionEvent.ACTION_DOWN -> {
-                 mLastX = event.rawX
-                 mLastY = event.rawY
+    var mLastY: Float = 0.0F
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+    val mInScreenX = event!!.rawX
+    val mInScreenY = event.rawY
+    when (event.action) {
+    MotionEvent.ACTION_DOWN -> {
+    mLastX = event.rawX
+    mLastY = event.rawY
 
-             }
-             MotionEvent.ACTION_MOVE -> {
-                 layoutParams.x = layoutParams.x.plus(mInScreenX - mLastX).toInt()
-                 layoutParams.y = layoutParams.y.plus(mInScreenY - mLastY).toInt()
-                 mLastX = mInScreenX
-                 mLastY = mInScreenY
-                 windowManager.updateViewLayout(floatingButton, layoutParams)
+    }
+    MotionEvent.ACTION_MOVE -> {
+    layoutParams.x = layoutParams.x.plus(mInScreenX - mLastX).toInt()
+    layoutParams.y = layoutParams.y.plus(mInScreenY - mLastY).toInt()
+    mLastX = mInScreenX
+    mLastY = mInScreenY
+    windowManager.updateViewLayout(floatingButton, layoutParams)
 
-             }
-         }
-         return super.onTouchEvent(event)
-     }*/
-
+    }
+    }
+    return super.onTouchEvent(event)
+    }*/
+    class EvenItemDecoration(private val space: Int, private val column: Int) : RecyclerView.ItemDecoration() {
+        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+            val position = parent.getChildAdapterPosition(view)
+// 每个span分配的间隔大小
+            val spanSpace = space * (column + 1) / column
+// 列索引
+            val colIndex = position % column
+// 列左、右间隙
+            outRect.left = space * (colIndex + 1) - spanSpace * colIndex
+            outRect.right = spanSpace * (colIndex + 1) - space * (colIndex + 1)
+// 行间距
+            if (position >= column) {
+                outRect.top = space
+            }
+        }
+    }
 }
 
 
